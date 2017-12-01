@@ -53,10 +53,10 @@ data class stop_times(val previous_location:String,val previous_location_uuid:St
 
 //Class that holds information about each route trip
 data class bus_summeries(val direction:String,val total_time:Int,
-                         val array:ArrayList<stop_times>,val start_time:String)
+                         val array:ArrayList<stop_times>,val start_time:String,val number_based_schedules:Int)
 
-//Class that holds average enteries for inbound and outbound journeys
-data class bus_average(val timestamp:String,val inbound_avg:String,val inbound_nodes:Int,val outbound_avg:String,val outbound_nodes:Int)
+//Class that holds average entries for inbound and outbound journeys
+data class bus_average(val timestamp:String,val inbound_avg:String,val inbound_nodes:Int,val outbound_avg:String,val outbound_nodes:Int,val accuracy:Int)
 
 //class that reads the specs of each bus from fleetlist.csv
 class bus_specs{

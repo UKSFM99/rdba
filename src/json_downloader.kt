@@ -22,8 +22,8 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                 array_split.clear()
                 array_split.addAll(i.split(','))
                 try {
-                    if(return_element("\"ArrivalTime\"")=="" && return_element("\"DepartureTime\"")==""){continue}
-                   val info=bus_info(return_element("\"LineRef\""),
+                    //Add JSON information to each variable as a data class array
+                    val info=bus_info(return_element("\"LineRef\""),
                             return_element("\"LocationCode\""),
                             return_element("\"LocationName\""),
                             return_element("\"JourneyType\""),
@@ -46,15 +46,16 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                             return_element("\"ScheduledDepartureTime\""),
                             return_element("\"DepartureTime\"")
                     )
-                    //println(info)
                     array_finished.add(info)
                 }catch(e:Exception){e.printStackTrace()}
             }
+            println("Finished downloading $route at $date - found ")
             output().output_averages(date,array_finished,route)
         }finally {
             System.out.println("Finished thread for route $route at $date!")
         }
     }
+    //return the value at index in JSON
     private fun return_element(query:String):String{
         val pos:Int?=search_for_index(query)
         val temp = array_split[pos!!].split(':')
@@ -65,6 +66,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
         }//try to re-join date string
         return index
     }
+    //get index of an array of query sting
     private fun search_for_index(term:String):Int?{
         var n=0
         for(i in array_split){
