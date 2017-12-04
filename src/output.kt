@@ -20,16 +20,18 @@ class output {
             var inbound_total=0
             var outbound_total=0
             var timestamp="${format_output_date.format(Date((i-resolution)*1000))} - ${format_output_date.format(Date((i)*1000))}"
-            for(k in recorded){
+            recorded.forEach { k ->
                 val bus_time = (format.parse(k.start_time).time/1000)
                 if(bus_time >=i && bus_time < (i+resolution)){//found a bus in the timestamp range!
-                    if(k.direction.contains("In")){
-                        inbound_count++
-                        inbound_total+=k.total_time
-                    }
-                    if(k.direction.contains("Out")){
-                        outbound_count++
-                        outbound_total+=k.total_time
+                    when{
+                        k.direction.contains("In")->{
+                            inbound_count++
+                            inbound_total+=k.total_time
+                        }
+                        k.direction.contains("Out")->{
+                            outbound_count++
+                            outbound_total+=k.total_time
+                        }
                     }
                 }
             }
@@ -40,14 +42,10 @@ class output {
             array_of_averages.add(bus_average(timestamp, inbound_avg_string,inbound_count, outbound_avg_string,outbound_count))
         }
         System.out.format("|%20s|%6s|%8s|%7s|%8s|\n","$route @ $date","In avg","In Node","Out avg","Out Node")
-        for(i in array_of_averages){
-            System.out.format("|%20s|%6s|%8s|%7s|%8s|\n",i.timestamp,i.inbound_avg,i.inbound_nodes.toString(),i.outbound_avg,i.outbound_nodes.toString())
-        }
+        array_of_averages.forEach { i-> System.out.format("|%20s|%6s|%8s|%7s|%8s|\n",i.timestamp,i.inbound_avg,i.inbound_nodes.toString(),i.outbound_avg,i.outbound_nodes.toString()) }
         File("$date $route.csv").printWriter().use{
             it.append("Bucket start,Inbound avg,Inbound nodes,Outbound avg,Outbound nodes\n")
-            for(i in array_of_averages){
-                it.append("${i.timestamp},${i.inbound_avg},${i.inbound_nodes},${i.outbound_avg},${i.outbound_nodes}\n")
-            }
+            array_of_averages.forEach{ i -> it.append("${i.timestamp},${i.inbound_avg},${i.inbound_nodes},${i.outbound_avg},${i.outbound_nodes}\n") }
         }
     }
 }

@@ -9,7 +9,7 @@ class analyze {
     fun analyze_time_deltas(array:ArrayList<bus_info>):ArrayList<bus_summeries>{
         var array_of_sequences=ArrayList<bus_summeries>()
         var start_time=""
-        var num_of_stops=0
+        var num_of_stops=1
         var array_of_stops=ArrayList<stop_times>()
         /*
             Below is an algorithm that does the following:
@@ -21,7 +21,7 @@ class analyze {
         for (i in 0 until array.size) {
             when(array[i].LocationName){
                 array[i].StartPoint -> {
-                    array_of_stops=ArrayList<stop_times>()
+                    array_of_stops=ArrayList()
                     array_of_stops.add(stop_times("None","0",
                             array[i].LocationName,array[i].LocationCode,
                             0,
@@ -30,7 +30,7 @@ class analyze {
                             get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
                             get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)))
                     start_time=array[i].ActualDepart
-                    num_of_stops=0
+                    num_of_stops=1
                 }
                 array[i].EndPoint->{
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
@@ -53,12 +53,11 @@ class analyze {
                                                   array[i].ActualArrival,array[i].ActualDepart,
                                                   get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
                                                   get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)))
-
                 }
             }
             num_of_stops++
         }
-        var patterns=HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
+        val patterns=HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
         //scan each occurrence of Route type
         for(i in 0 until array_of_sequences.size) {
             val count = patterns.get(array_of_sequences[i].patterntype)
@@ -68,7 +67,7 @@ class analyze {
                 patterns.put(array_of_sequences[i].patterntype, count + 1)
             }
         }
-        //sort the array by occurances (value)
+        //sort the array by occurrences (value)
         val sorted_patterns=patterns.toList().sortedBy { (key,value) -> value}.toMap().toList()
         println("Route Pattern occurrences:")
         for(i in sorted_patterns){
@@ -77,11 +76,9 @@ class analyze {
         val route_occurance_threashold=5
         //TODO add configuration to change threshold above
         val wanted_routes=ArrayList<String>()
-        for(i in sorted_patterns){
-            if(i.second > route_occurance_threashold){wanted_routes.add(i.first)}//add routes that have more than 5 occurances
-        }
-        println("Allowing routes: ${wanted_routes} (Above threshold of ${route_occurance_threashold})")
-        array_of_sequences.removeIf { i -> i.patterntype !in wanted_routes }//remove any routes that are not valif from wanted routes
+        sorted_patterns.forEach { i-> if(i.second > route_occurance_threashold){wanted_routes.add(i.first)} }
+        println("Allowing routes: $wanted_routes (Above threshold of $route_occurance_threashold)")
+        array_of_sequences.removeIf { i -> i.patterntype !in wanted_routes }//remove any routes that are not valid from wanted routes
         return array_of_sequences
     }
     private val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
