@@ -9,19 +9,35 @@ class json_downloader(url:String,route:String,date:String):Runnable {
     private val route=route
     private val url=url
     private val date=date
-    private var array= arrayListOf<String>()
-    private var array_split= arrayListOf<String>()
+    private var array_split=ArrayList<String>()
     override fun run(){
         val array_finished=ArrayList<bus_info>()
         try {
             println("Begin download for route: $route for date: $date")
             var read = URL(url).readText()
             read = read.substring(1, read.length - 1)//remove [ and ] from sting
-            array.addAll(read.split("},{"))
+            val array = read.split("},{")
             for (i in array) {
                 array_split.clear()
                 array_split.addAll(i.split(','))
                 try {
+                    //If actual dep/arr time is blank then use scheduled
+                    var actual_arrival_time=""
+                    var actual_departure_time=""
+                    try{
+                        SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(return_element("\"ArrivalTime\""))
+                        actual_arrival_time = return_element("\"ArrivalTime\"")
+                    }
+                    catch(e:Exception){
+                        actual_arrival_time = return_element("\"ScheduledArrivalTime\"")
+                    }
+                    try{
+                        SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(return_element("\"DepartureTime\""))
+                        actual_departure_time = return_element("\"DepartureTime\"")
+                    }
+                    catch(e:Exception){
+                        actual_departure_time = return_element("\"ScheduledDepartureTime\"")
+                    }
                     //Add JSON information to each variable as a data class array
                     val info=bus_info(return_element("\"LineRef\""),
                             return_element("\"LocationCode\""),
@@ -30,9 +46,9 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                             return_element("\"LiveJourneyId\""),
                             return_element("\"Sequence\""),
                             return_element("\"RunningBoard\""),
-                            return_element("\"Duty\"").toInt(),
+                            return_element("\"Duty\""),
                             return_element("\"Direction\""),
-                            return_element("\"JourneyCode\"").toInt(),
+                            return_element("\"JourneyCode\""),
                             return_element("\"VehicleCode\""),
                             return_element("\"DriverCode\""),
                             !return_element("\"TimingPoint\"").contains("Non"),
@@ -42,9 +58,9 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                             return_element("\"EndPoint\""),
                             Array<Double>(2) { return_element("\"Latitude\"").toDouble();return_element("\"Longitude\"").toDouble() },
                             return_element("\"ScheduledArrivalTime\""),
-                            return_element("\"ArrivalTime\""),
+                            actual_arrival_time,
                             return_element("\"ScheduledDepartureTime\""),
-                            return_element("\"DepartureTime\"")
+                            actual_departure_time
                     )
                     array_finished.add(info)
                 }catch(e:Exception){e.printStackTrace()}

@@ -22,6 +22,9 @@ fun main(args: Array<String>) {
         val route = readLine().toString()
         println("enter dates in format YYYY-MM-DD, separated by ','")
         val date = readLine().toString()
+        val today=SimpleDateFormat("yyyy-MM-dd").format(Date())
+        //Check input dates against current date - if match then throw Exception as we cannot run historical mode with current day's data!
+        if(date.contains(today)){throw Exception("Cannot enter Today's date in historical mode!")}
         val current_route = route.split(',')
         val current_date = date.split(',')
         val thread_array = ArrayList<Thread>()

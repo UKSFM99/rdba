@@ -2,6 +2,8 @@
 #API KEY
 api.key
 
+#IDEA FILES
+.idea/*
 #OUTPUT CSV FILES
 *.csv
 
