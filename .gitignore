@@ -1,4 +1,5 @@
 
+
 #API KEY
 api.key
 
@@ -6,7 +7,7 @@ api.key
 .idea/*
 #OUTPUT CSV FILES
 *.csv
-
+output/*
 # Compiled class file
 *.class
 

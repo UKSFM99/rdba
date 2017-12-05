@@ -56,7 +56,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                             return_element("\"NumberStops\"").toInt(),
                             return_element("\"StartPoint\""),
                             return_element("\"EndPoint\""),
-                            Array<Double>(2) { return_element("\"Latitude\"").toDouble();return_element("\"Longitude\"").toDouble() },
+                            LatLng(return_element("\"Latitude\"").toDouble(),return_element("\"Longitude\"").toDouble()),
                             return_element("\"ScheduledArrivalTime\""),
                             actual_arrival_time,
                             return_element("\"ScheduledDepartureTime\""),
@@ -65,7 +65,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                     array_finished.add(info)
                 }catch(e:Exception){e.printStackTrace()}
             }
-            println("Finished downloading $route at $date - found ")
+            println("Finished downloading $route at $date")
             output().output_averages(date,array_finished,route)
         }finally {
             System.out.println("Finished thread for route $route at $date!")

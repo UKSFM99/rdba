@@ -1,13 +1,15 @@
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 /*
     Class in order to take the bus_info array and do various analysis to
  */
 
 class analyze {
-    fun analyze_time_deltas(array:ArrayList<bus_info>):ArrayList<bus_summeries>{
-        var array_of_sequences=ArrayList<bus_summeries>()
+    fun analyze_times(array:ArrayList<bus_info>):ArrayList<bus_summeries>{
+        val array_of_sequences=ArrayList<bus_summeries>()
         var start_time=""
         var num_of_stops=1
         var array_of_stops=ArrayList<stop_times>()
@@ -24,7 +26,7 @@ class analyze {
                     array_of_stops=ArrayList()
                     array_of_stops.add(stop_times("None","0",
                             array[i].LocationName,array[i].LocationCode,
-                            0,
+                            array[i].Location_lat_lng, 0,
                             get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
                             array[i].ActualArrival,array[i].ActualDepart,
                             get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
@@ -35,6 +37,7 @@ class analyze {
                 array[i].EndPoint->{
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
                             array[i].LocationName,array[i].LocationCode,
+                            array[i].Location_lat_lng,
                             get_time_delta(array[i].ActualArrival,array[i-1].ActualDepart),
                             get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
                             array[i].ActualArrival,array[i].ActualDepart,
@@ -48,6 +51,7 @@ class analyze {
                 else->{
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
                                                   array[i].LocationName,array[i].LocationCode,
+                                                  array[i].Location_lat_lng,
                                                   get_time_delta(array[i].ActualArrival,array[i-1].ActualDepart),
                                                   get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
                                                   array[i].ActualArrival,array[i].ActualDepart,
@@ -57,30 +61,38 @@ class analyze {
             }
             num_of_stops++
         }
-        val patterns=HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
-        //scan each occurrence of Route type
-        for(i in 0 until array_of_sequences.size) {
-            val count = patterns.get(array_of_sequences[i].patterntype)
-            if (count == null) {
-                patterns.put(array_of_sequences[i].patterntype, 1)
-            } else {
-                patterns.put(array_of_sequences[i].patterntype, count + 1)
-            }
-        }
-        //sort the array by occurrences (value)
-        val sorted_patterns=patterns.toList().sortedBy { (key,value) -> value}.toMap().toList()
-        println("Route Pattern occurrences:")
-        for(i in sorted_patterns){
-            println(i)
-        }
-        val route_occurance_threashold=5
-        //TODO add configuration to change threshold above
-        val wanted_routes=ArrayList<String>()
-        sorted_patterns.forEach { i-> if(i.second > route_occurance_threashold){wanted_routes.add(i.first)} }
-        println("Allowing routes: $wanted_routes (Above threshold of $route_occurance_threashold)")
-        array_of_sequences.removeIf { i -> i.patterntype !in wanted_routes }//remove any routes that are not valid from wanted routes
         return array_of_sequences
     }
     private val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     private fun get_time_delta(time_now:String,time_before:String):Int = ((format.parse(time_now).time/1000)-(format.parse(time_before).time/1000)).toInt()
+
+    //Work out different routes and each stop location/position in the route
+    fun analyze_routes(array:ArrayList<bus_summeries>,route:String):ArrayList<route_stops> {
+        val return_array = ArrayList<route_stops>()
+        val routes_done = HashMap<String, Int>()//KEY:Pattern type VALUE:occurrences
+        //scan each occurrence of Route type
+        for (i in 0 until array.size) {
+            val count = routes_done.get(array[i].patterntype)
+            if (count == null) {
+                routes_done.put(array[i].patterntype, 1)
+                val arrayofstops = ArrayList<stops>()
+                var stop_num = 0
+                for (i in array[i].array) {
+                    arrayofstops.add(stops(i.position, i.current_location, i.current_location_uuid, stop_num))
+                    stop_num++
+                }
+                return_array.add(route_stops(array[i].patterntype,arrayofstops))
+            }
+
+        }
+        return_array.forEach { i -> File("output/routes/$route ${i.pattern}.csv").printWriter().use {
+            it.append("Stop number,Stop Name,Stop UUID,Stop Location Lat,Stop Location Long\n")
+            var stop_id=0
+                i.stops_list.forEach { k -> it.append("$stop_id,${k.name},${k.UUID},${k.name},${k.Location.Latitude},${k.Location.Longitude}\n")
+                stop_id++
+                }
+            }
+        }
+        return return_array
+    }
 }
