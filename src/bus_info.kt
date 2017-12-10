@@ -1,7 +1,10 @@
+import sun.reflect.generics.tree.Tree
 import java.io.File
 import java.io.InputStream
 import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /*
     Class that holds multiple data classes with various information
@@ -20,6 +23,10 @@ data class bus_info(val Lineref:String,val LocationCode:String,
                     val ScheduledArrival:String,val ActualArrival:String,
                     val ScheduledDepart:String,val ActualDepart:String
                     )
+
+//data class to hold LIVE bus information
+data class bus_live_info(val Lineref:String,val Location_lat_lng: LatLng,
+                         val LastUpdated:String,val vehicleCode:String ,val heading:Int,val Currstop:String)
 
 //Class that holds information about each route details
 data class stop_times(val previous_location:String,val previous_location_uuid:String,
@@ -41,6 +48,13 @@ data class bus_summeries(val direction:String,val total_time:Int,
 
 //Class that holds average entries for inbound and outbound journeys
 data class bus_average(val timestamp:String,val inbound_avg:String,val inbound_nodes:Int,val outbound_avg:String,val outbound_nodes:Int)
+
+//class to hold our actual training data for stops
+data class stop_time_training(val from_to:String, var times: ArrayList<times_data>)
+    //Arraylist contains count,totaltime,min,max
+data class times_data(val timestamp:String,val data:Array<Int>) {
+        fun get_avg() = (data[1].toDouble() / data[0].toDouble()).toInt()
+    }
 
 
 //class that reads the specs of each bus from fleetlist.csv

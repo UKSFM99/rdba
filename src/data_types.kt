@@ -1,3 +1,5 @@
+import org.junit.Test
+import kotlin.test.assertEquals
 
 //LATLNG
 data class LatLng(val Latitude:Double,val Longitude:Double){
@@ -10,4 +12,14 @@ data class LatLng(val Latitude:Double,val Longitude:Double){
     fun toArrayList():ArrayList<Double>{
         return arrayListOf(Latitude,Longitude)
     }
+}
+
+//search array and return index of element
+fun ArrayList<*>.search(to_find:String):Int?{
+    this.forEach { i ->
+        if(i.toString().contains(to_find)){
+            return this.indexOf(i)
+        }
+    }
+    return null
 }

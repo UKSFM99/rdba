@@ -2,6 +2,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /*
     Class in order to take the bus_info array and do various analysis to
@@ -27,10 +28,10 @@ class analyze {
                     array_of_stops.add(stop_times("None","0",
                             array[i].LocationName,array[i].LocationCode,
                             array[i].Location_lat_lng, 0,
-                            get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
+                            Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                             array[i].ActualArrival,array[i].ActualDepart,
-                            get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
-                            get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)))
+                                    Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
+                                    Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
                     start_time=array[i].ActualDepart
                     num_of_stops=1
                 }
@@ -38,11 +39,11 @@ class analyze {
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
                             array[i].LocationName,array[i].LocationCode,
                             array[i].Location_lat_lng,
-                            get_time_delta(array[i].ActualArrival,array[i-1].ActualDepart),
-                            get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
+                            Math.abs(get_time_delta(array[i].ActualArrival,array[i-1].ActualArrival)),
+                                    Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                             array[i].ActualArrival,array[i].ActualDepart,
-                            get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
-                            get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)))
+                            Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
+                            Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
                     val end_time=array[i].ActualArrival
                     if(array[i].NumberStops <= num_of_stops) {
                         array_of_sequences.add(bus_summeries(array[i].Direction, get_time_delta(end_time, start_time), array_of_stops, start_time, end_time,array[i].JourneyPattern))
@@ -52,11 +53,11 @@ class analyze {
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
                                                   array[i].LocationName,array[i].LocationCode,
                                                   array[i].Location_lat_lng,
-                                                  get_time_delta(array[i].ActualArrival,array[i-1].ActualDepart),
-                                                  get_time_delta(array[i].ActualDepart,array[i].ActualArrival),
+                                                  Math.abs(get_time_delta(array[i].ActualArrival,array[i-1].ActualArrival)),
+                                                  Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                                                   array[i].ActualArrival,array[i].ActualDepart,
-                                                  get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival),
-                                                  get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)))
+                                                  Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
+                                                  Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
                 }
             }
             num_of_stops++
@@ -69,8 +70,22 @@ class analyze {
     //Work out different routes and each stop location/position in the route
     fun analyze_routes(array:ArrayList<bus_summeries>,route:String):ArrayList<route_stops> {
         val return_array = ArrayList<route_stops>()
-        val routes_done = HashMap<String, Int>()//KEY:Pattern type VALUE:occurrences
+        val routes_done = HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
         //scan each occurrence of Route type
+        for (i in 0 until array.size) {
+            val count = routes_done.get(array[i].patterntype)
+            if (count == null) {
+                routes_done.put(array[i].patterntype, 1)
+                val arrayofstops = ArrayList<stops>()
+                var stop_num = 0
+                for (i in array[i].array) {
+                    arrayofstops.add(stops(i.position, i.current_location, i.current_location_uuid, stop_num))
+                    stop_num++
+                }
+                return_array.add(route_stops(array[i].patterntype,arrayofstops))
+            }
+
+        }
         for (i in 0 until array.size) {
             val count = routes_done.get(array[i].patterntype)
             if (count == null) {
@@ -94,5 +109,58 @@ class analyze {
             }
         }
         return return_array
+    }
+    fun analyze_stop_measures(resolution:Long,date:String,array:ArrayList<bus_summeries>){
+        val start:Long = format.parse("$date 00:00:00").time/1000
+        val end:Long = 1+format.parse("$date 23:59:59").time/1000
+        val map = ArrayList<stop_time_training>()
+        val format_output_date = SimpleDateFormat("HH:mm:ss")
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        for(t in (start+resolution)..end step resolution) {
+            val timestamp="${format_output_date.format(Date((t-resolution)*1000))} - ${format_output_date.format(Date((t)*1000))}"
+            array.forEach { i ->
+                i.array.forEach { k ->
+                    //if in time range
+                    if(format.parse(k.arrive_time).time/1000 >=t && format.parse(k.arrive_time).time/1000 < (t+resolution)) {
+                        val data = map.search("${k.previous_location},${k.current_location},${i.direction}")
+                        //stop entry was not found, create on
+                        if (data == null) {
+                            map.add(stop_time_training("${k.previous_location},${k.current_location},${i.direction}", arrayListOf(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time)))))
+                        //stop entry was found, search for timestamp
+                        } else {
+                            //timestamp was found, so update it
+                            val time_id=map[data].times.search(timestamp)
+                            if(time_id!=null) {
+                                map[data].times[time_id].data[0] = map[data].times[time_id].data[0]+1
+                                map[data].times[time_id].data[1] = map[data].times[time_id].data[1]+1 + k.travel_time
+                                map[data].times[time_id].data[2] = if (map[data].times[time_id].data[2] < k.travel_time) map[data].times[time_id].data[2] else k.travel_time
+                                map[data].times[time_id].data[3] = if (map[data].times[time_id].data[3] > k.travel_time) map[data].times[time_id].data[3] else k.travel_time
+                            }
+                            //timestamp was not found so add a new one
+                            else{
+                                map[data].times.add(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time,k.travel_time)))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(i in map){
+            println("<<|${i.from_to.split(',')[0]} -> ${i.from_to.split(',')[1]}|>>")
+            System.out.format("|%20s|%5s|%5s|%5s|%5s|\n","TIMESTAMP", "NODES","AVG","MIN" ,"MAX")
+            var count=0
+            var avg=0
+            var min=1000
+            var max=0
+            for(k in i.times){
+                System.out.format("|%20s|%5s|%5s|%5s|%5s|\n",k.timestamp, k.data[0], k.get_avg() ,k.data[2] ,k.data[3])
+                count+=1
+                avg=avg+k.data[1]
+                min=if (min < k.data[2]) min else k.data[2]
+                max=if (max > k.data[3]) max else k.data[3]
+            }
+            println("Daily avg: ${(avg.toDouble()/count.toDouble()).toInt()} Daily min: $min Daily max: $max")
+            println("\n")
+        }
     }
 }

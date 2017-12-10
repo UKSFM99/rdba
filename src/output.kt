@@ -1,20 +1,23 @@
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.min
+
 /*
     Class that holds multiple output functions, depending on data type
  */
 
 class output {
     fun output_averages(date:String,array:ArrayList<bus_info>,route:String){
+        val resolution:Long=1*60*60
         val recorded=analyze().analyze_times(array)
         val routes=analyze().analyze_routes(recorded,route)
+        val routes_details=analyze().analyze_stop_measures(resolution,date,recorded)
         val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val format_output_date = SimpleDateFormat("HH:mm:ss")
         val start:Long = format.parse("$date 00:00:00").time/1000
         val end:Long = 1+format.parse("$date 23:59:59").time/1000
-        val resolution:Long=1*60*60//hour
-        val route_occurance_threashold=5
+        val route_occurance_threshold=5
         //TODO add configuration to change threshold above
         val array_of_averages = ArrayList<bus_average>()
         //Filter out routes with less than n occurances
@@ -30,11 +33,11 @@ class output {
         }
         //sort the array by occurrences (value)
         val wanted_routes=ArrayList<String>()
-        val sorted_patterns=patterns.toList().sortedBy { (key,value) -> value}.toMap().toList()
+        val sorted_patterns=patterns.toList().sortedBy { (_,value) -> value}.toMap().toList()
         println("Route Pattern occurrences:")
         sorted_patterns.forEach { i -> println(i) }
-        sorted_patterns.forEach { i-> if(i.second > route_occurance_threashold){wanted_routes.add(i.first)} }
-        println("Allowing routes: $wanted_routes (Above threshold of $route_occurance_threashold)")
+        sorted_patterns.forEach { i-> if(i.second > route_occurance_threshold){wanted_routes.add(i.first)} }
+        println("Allowing routes: $wanted_routes (Above threshold of $route_occurance_threshold)")
         recorded.removeIf { i -> i.patterntype !in wanted_routes }//remove any routes that are not valid from wanted routes
         for(i in (start+resolution)..end step resolution){
             var inbound_count=0
