@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
         val date = readLine().toString()
         val today=SimpleDateFormat("yyyy-MM-dd").format(Date())
         //Check input dates against current date - if match then throw Exception as we cannot run historical mode with current day's data!
-        //if(date.contains(today)){throw Exception("Cannot enter Today's date in historical mode!")}
+        if(date.contains(today)){throw Exception("Cannot enter Today's date in historical mode!, please use Live mode")}
         val current_route = route.split(',')
         val current_date = date.split(',')
         val thread_array = ArrayList<Thread>()
@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
         //TODO launch AT MAXIMUM the number of system threads at any given time for best performance
         for (k in current_date) {
             for (i in current_route) {
-                val url = "http://rtl2.ods-live.co.uk/api/trackingHistory?key=${File("api.key").readText()}&service=${i}&date=${k}&vehicle=&location="
+                val url = "http://rtl2.ods-live.co.uk/api/trackingHistory?key=${File("api.key").readText()}&service=$i&date=$k&vehicle=&location="
                 val thread = Thread(json_downloader(url, i, k))
                 thread.start()
                 thread_array.add(thread)

@@ -24,19 +24,17 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                     //If actual dep/arr time is blank then use scheduled
                     var actual_arrival_time=""
                     var actual_departure_time=""
-                    try{
+                    actual_arrival_time = try{
                         SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(return_element("\"ArrivalTime\""))
-                        actual_arrival_time = return_element("\"ArrivalTime\"")
+                        return_element("\"ArrivalTime\"")
+                    } catch(e:Exception){
+                        return_element("\"ScheduledArrivalTime\"")
                     }
-                    catch(e:Exception){
-                        actual_arrival_time = return_element("\"ScheduledArrivalTime\"")
-                    }
-                    try{
+                    actual_departure_time = try{
                         SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(return_element("\"DepartureTime\""))
-                        actual_departure_time = return_element("\"DepartureTime\"")
-                    }
-                    catch(e:Exception){
-                        actual_departure_time = return_element("\"ScheduledDepartureTime\"")
+                        return_element("\"DepartureTime\"")
+                    } catch(e:Exception){
+                        return_element("\"ScheduledDepartureTime\"")
                     }
                     //Add JSON information to each variable as a data class array
                     val info=bus_info(return_element("\"LineRef\""),
@@ -63,10 +61,10 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                             actual_departure_time
                     )
                     array_finished.add(info)
-                }catch(e:Exception){e.printStackTrace()}
+                }catch(e:Exception){ e.printStackTrace() }
             }
             println("Finished downloading $route at $date")
-            output().output_averages(date,array_finished,route)
+            output().output_data(date,array_finished,route)
         }finally {
             System.out.println("Finished thread for route $route at $date!")
         }

@@ -73,44 +73,28 @@ class analyze {
         val routes_done = HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
         //scan each occurrence of Route type
         for (i in 0 until array.size) {
-            val count = routes_done.get(array[i].patterntype)
+            val count = routes_done[array[i].patterntype]
             if (count == null) {
                 routes_done.put(array[i].patterntype, 1)
                 val arrayofstops = ArrayList<stops>()
-                var stop_num = 0
-                for (i in array[i].array) {
-                    arrayofstops.add(stops(i.position, i.current_location, i.current_location_uuid, stop_num))
-                    stop_num++
-                }
+                array[i].array.mapIndexedTo(arrayofstops) { stop_num, i -> stops(i.position, i.current_location, i.current_location_uuid, stop_num) }
                 return_array.add(route_stops(array[i].patterntype,arrayofstops))
             }
 
         }
         for (i in 0 until array.size) {
-            val count = routes_done.get(array[i].patterntype)
+            val count = routes_done[array[i].patterntype]
             if (count == null) {
                 routes_done.put(array[i].patterntype, 1)
                 val arrayofstops = ArrayList<stops>()
-                var stop_num = 0
-                for (i in array[i].array) {
-                    arrayofstops.add(stops(i.position, i.current_location, i.current_location_uuid, stop_num))
-                    stop_num++
-                }
+                array[i].array.mapIndexedTo(arrayofstops) { stop_num, i -> stops(i.position, i.current_location, i.current_location_uuid, stop_num) }
                 return_array.add(route_stops(array[i].patterntype,arrayofstops))
             }
 
         }
-        return_array.forEach { i -> File("output/routes/$route ${i.pattern}.csv").printWriter().use {
-            it.append("Stop number,Stop Name,Stop UUID,Stop Location Lat,Stop Location Long\n")
-            var stop_id=0
-                i.stops_list.forEach { k -> it.append("$stop_id,${k.name},${k.UUID},${k.name},${k.Location.Latitude},${k.Location.Longitude}\n")
-                stop_id++
-                }
-            }
-        }
         return return_array
     }
-    fun analyze_stop_measures(resolution:Long,date:String,array:ArrayList<bus_summeries>){
+    fun analyze_stop_measures(resolution:Long,date:String,array:ArrayList<bus_summeries>):ArrayList<stop_time_training>{
         val start:Long = format.parse("$date 00:00:00").time/1000
         val end:Long = 1+format.parse("$date 23:59:59").time/1000
         val map = ArrayList<stop_time_training>()
@@ -118,14 +102,14 @@ class analyze {
         val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         for(t in (start+resolution)..end step resolution) {
             val timestamp="${format_output_date.format(Date((t-resolution)*1000))} - ${format_output_date.format(Date((t)*1000))}"
-            array.forEach { i ->
-                i.array.forEach { k ->
+            array.forEach { (direction, _, array1) ->
+                array1.forEach { k ->
                     //if in time range
                     if(format.parse(k.arrive_time).time/1000 >=t && format.parse(k.arrive_time).time/1000 < (t+resolution)) {
-                        val data = map.search("${k.previous_location},${k.current_location},${i.direction}")
+                        val data = map.search("${k.previous_location},${k.current_location},${direction}")
                         //stop entry was not found, create on
                         if (data == null) {
-                            map.add(stop_time_training("${k.previous_location},${k.current_location},${i.direction}", arrayListOf(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time)))))
+                            map.add(stop_time_training("${k.previous_location},${k.current_location},${direction}", arrayListOf(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time)))))
                         //stop entry was found, search for timestamp
                         } else {
                             //timestamp was found, so update it
@@ -145,22 +129,9 @@ class analyze {
                 }
             }
         }
-        for(i in map){
-            println("<<|${i.from_to.split(',')[0]} -> ${i.from_to.split(',')[1]}|>>")
-            System.out.format("|%20s|%5s|%5s|%5s|%5s|\n","TIMESTAMP", "NODES","AVG","MIN" ,"MAX")
-            var count=0
-            var avg=0
-            var min=1000
-            var max=0
-            for(k in i.times){
-                System.out.format("|%20s|%5s|%5s|%5s|%5s|\n",k.timestamp, k.data[0], k.get_avg() ,k.data[2] ,k.data[3])
-                count+=1
-                avg=avg+k.data[1]
-                min=if (min < k.data[2]) min else k.data[2]
-                max=if (max > k.data[3]) max else k.data[3]
-            }
-            println("Daily avg: ${(avg.toDouble()/count.toDouble()).toInt()} Daily min: $min Daily max: $max")
-            println("\n")
-        }
+        //remove entries we do not want from data
+        map.removeIf { (from_to) -> from_to.split(',')[0] == from_to.split(',')[1] }
+        map.removeIf { (from_to) -> from_to.split(',')[0] == "None" }
+        return map
     }
 }
