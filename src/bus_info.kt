@@ -60,9 +60,14 @@ data class times_data(val timestamp:String,val data:Array<Int>) {
 //class that reads the specs of each bus from fleetlist.csv
 class bus_specs{
     private val specs = ArrayList<ArrayList<String>>()//2D array
-    fun get_specs(bus_id:String):ArrayList<String>?{
+    fun get_specs(bus_id:String):Any{
         if(specs.size==0){ read() }//read if array is null, if not just scan
-        return specs.firstOrNull { it[0] == bus_id }
+        specs.forEach { i ->
+            if(i[0].contains(bus_id)||bus_id.contains(i[0])){
+                return i
+            }
+        }
+        return ""
     }
     private fun read(){
         val lineList = mutableListOf<String>()

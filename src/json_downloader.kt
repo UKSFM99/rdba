@@ -15,7 +15,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
         try {
             println("Begin download for route: $route for date: $date")
             var read = URL(url).readText()
-            read = read.substring(1, read.length - 1)//remove [ and ] from sting
+            read = read.substring(1, read.length - 1)//remove [ and ] from string
             val array = read.split("},{")
             for (i in array) {
                 array_split.clear()

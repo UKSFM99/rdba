@@ -19,7 +19,7 @@ class output {
         val format_output_date = SimpleDateFormat("HH:mm:ss")
         val start:Long = format.parse("$date 00:00:00").time/1000
         val end:Long = 1+format.parse("$date 23:59:59").time/1000
-        val route_occurance_threshold=5
+        val route_occurance_threshold=0
         //TODO add configuration to change threshold above
         val array_of_averages = ArrayList<bus_average>()
         //Filter out routes with less than n occurances
@@ -95,11 +95,11 @@ class output {
          */
         File("output/routes/$route").mkdirs()
         routes.forEach { (pattern, stops_list) ->
-            File("output/routes/$route/${pattern}.csv").printWriter().use {
+            File("output/routes/$route/$pattern.csv").printWriter().use {
                 it.append("Stop number,Stop Name,Stop UUID,Stop Location Lat,Stop Location Long\n")
                 var stop_id = 0
                 stops_list.forEach { (Location, name, UUID) ->
-                    it.append("$stop_id,${name},${UUID},${name},${Location.Latitude},${Location.Longitude}\n")
+                    it.append("$stop_id,$name,$UUID,${Location.Latitude},${Location.Longitude}\n")
                     stop_id++
                 }
             }

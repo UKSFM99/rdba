@@ -2,6 +2,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.concurrent.timerTask
 
 fun main(args: Array<String>) {
     println("Enter mode")
@@ -14,7 +15,11 @@ fun main(args: Array<String>) {
         val now=Date()
         val format=SimpleDateFormat("yyyy-MM-dd").format(now)
         println("Tracking for $format")
-        TODO("needs implementing")
+        System.err.println("WARNING: Method is incomplete, bugs are present")
+        Timer().scheduleAtFixedRate(timerTask{
+            val thread = Thread(json_downloader_live())
+            thread.start()
+        },0,10000)
     }
     else {
         println("Historical data mode")
