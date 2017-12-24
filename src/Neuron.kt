@@ -16,6 +16,8 @@ class Neuron(val id:String,val route:String) {
     private var updates_without_change=0
     private var location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
     private var prev_location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
+    private var curr_stop=""
+    private var prev_stop=""
     init{
         this.metadata = bus_specs().get_specs(id)
         this.route_data = get_all_routes()
@@ -50,8 +52,25 @@ class Neuron(val id:String,val route:String) {
                                     else {
                                         println("${text_color.ANSI_BLUE}Bus $id (Route $route(${i.key.split(',')[0]})) is at ${it.name} heading towards ${i.key.split(',')[1]}${text_color.ANSI_RESET}")
                                     }
+                                    prev_stop=curr_stop
+                                    curr_stop=it.name
                                 }
                             }
+                        }
+                        if(prev_stop!=""){
+                            var route_hits=ArrayList<String>()
+                            route_data.forEach{i->
+                                i.value.forEachIndexed { index, stops ->
+                                    try{
+                                        if(curr_stop==stops.name&&prev_stop==i.value[index-1].name){
+                                            println("${text_color.ANSI_PURPLE}>50% chance $id is on ${i.key.split(',')[0]} to ${i.key.split(',')[1]}${text_color.ANSI_RESET}")
+                                        }
+                                        else{route_hits.add(i.key)}
+
+                                    }catch(e:Exception){}
+                                }
+                            }
+                            route_hits.forEach { route_data.remove(it) }
                         }
                     }
                 }
@@ -104,17 +123,24 @@ class Neuron(val id:String,val route:String) {
                     lines.forEach { i ->
                         if(!i.contains("Stop")){
                             val arr=i.split(',')
-                            temp_array.add(stops(LatLng(arr[3].toDouble(),arr[4].toDouble()),arr[1],arr[2],arr[0].toInt()))
+                            temp_array.add(stops(LatLng(arr[3].toDouble(),arr[4].toDouble()),arr[1],arr[2],false,arr[0].toInt()))
                         }
                     }
                 }
-                hash_output.put("${it.toString().replace("output/routes/$route/","").replace(".csv","")},${temp_array[temp_array.lastIndex].name}",temp_array)
+                if(temp_array[0] != temp_array[temp_array.lastIndex]) {
+                    hash_output.put("${it.toString().replace("output/routes/$route/", "").replace(".csv", "")},${temp_array[temp_array.lastIndex].name}", temp_array)
+                }
+                else{
+                    //TODO Handle loop route codes
+                    println("${text_color.ANSI_RED}Help! Found a loop route \"${it.toString().replace("output/routes/$route/", "").replace(".csv", "")}\" and don't know how to handle it, ignoring${text_color.ANSI_RED}")
+                }
             }
             catch (e:Exception){}
         }
         if(hash_output.isEmpty()){System.err.println("Cannot find any data for $route")}
         else {
             val route_list=ArrayList<String>()
+            //TODO remove all
             hash_output.keys.forEach { route_list.add(it.split(',')[0]) }
             print("Using routes $route_list for bus $id on route $route\n")
         }

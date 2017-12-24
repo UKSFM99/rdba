@@ -34,10 +34,11 @@ data class stop_times(val previous_location:String,val previous_location_uuid:St
                       val position:LatLng,
                       val travel_time:Int,val waiting_time:Int,
                       val arrive_time:String,val depart_time:String,
-                      val delta_arrival:Int,val delta_departure:Int)
+                      val delta_arrival:Int,val delta_departure:Int,
+                      val timing_point:Boolean)
 
 //hold location and stop number on route
-data class stops(val Location:LatLng,val name:String, val UUID:String,var Position:Int)
+data class stops(val Location:LatLng,val name:String, val UUID:String,val is_timing:Boolean,var Position:Int)
 
 //hold pattern type and stops array
 data class route_stops(val pattern:String,val stops_list:ArrayList<stops>)

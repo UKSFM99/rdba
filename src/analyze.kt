@@ -22,8 +22,8 @@ class analyze {
             4. Add the finished route to the analyzed array if the route is valid
          */
         for (i in 0 until array.size) {
-            when(array[i].LocationName){
-                array[i].StartPoint -> {
+            when{
+                array[i].LocationName.contains(array[i].StartPoint) -> {
                     array_of_stops=ArrayList()
                     array_of_stops.add(stop_times("None","0",
                             array[i].LocationName,array[i].LocationCode,
@@ -31,11 +31,11 @@ class analyze {
                             Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                             array[i].ActualArrival,array[i].ActualDepart,
                                     Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
-                                    Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
+                                    Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)),array[i].TimingPoint))
                     start_time=array[i].ActualDepart
                     num_of_stops=1
                 }
-                array[i].EndPoint->{
+                array[i].LocationName.contains(array[i].EndPoint) ->{
                     array_of_stops.add(stop_times(array[i-1].LocationName,array[i-1].LocationCode,
                             array[i].LocationName,array[i].LocationCode,
                             array[i].Location_lat_lng,
@@ -43,7 +43,7 @@ class analyze {
                                     Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                             array[i].ActualArrival,array[i].ActualDepart,
                             Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
-                            Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
+                            Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)),array[i].TimingPoint))
                     val end_time=array[i].ActualArrival
                     if(array[i].NumberStops <= num_of_stops) {
                         array_of_sequences.add(bus_summeries(array[i].Direction, get_time_delta(end_time, start_time), array_of_stops, start_time, end_time,array[i].JourneyPattern))
@@ -57,7 +57,7 @@ class analyze {
                                                   Math.abs(get_time_delta(array[i].ActualDepart,array[i].ActualArrival)),
                                                   array[i].ActualArrival,array[i].ActualDepart,
                                                   Math.abs(get_time_delta(array[i].ActualArrival,array[i].ScheduledArrival)),
-                                                  Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart))))
+                                                  Math.abs(get_time_delta(array[i].ActualDepart,array[i].ScheduledDepart)),array[i].TimingPoint))
                 }
             }
             num_of_stops++
@@ -77,7 +77,7 @@ class analyze {
             if (count == null) {
                 routes_done.put(array[i].patterntype, 1)
                 val arrayofstops = ArrayList<stops>()
-                array[i].array.mapIndexedTo(arrayofstops) { stop_num, i -> stops(i.position, i.current_location, i.current_location_uuid, stop_num) }
+                array[i].array.mapIndexedTo(arrayofstops) { stop_num, i -> stops(i.position, i.current_location, i.current_location_uuid,i.timing_point, stop_num) }
                 return_array.add(route_stops(array[i].patterntype,arrayofstops))
             }
 

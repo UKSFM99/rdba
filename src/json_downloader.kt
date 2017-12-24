@@ -62,7 +62,6 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                     )
                     array_finished.add(info)
                 } catch (e: Exception) {
-                    e.printStackTrace()
                 }
             }
             println("Finished downloading $route at $date")

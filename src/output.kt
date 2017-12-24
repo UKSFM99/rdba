@@ -91,7 +91,7 @@ class output {
         }
 
         /*
-            TIME DATA
+            ROUTE DATA
          */
         File("output/routes/$route").mkdirs()
         routes.forEach { (pattern, stops_list) ->
@@ -131,8 +131,8 @@ class output {
             var min=1000000
             var max=0
             recorded.forEach { i ->
-                dir=i.direction
                 if(i.patterntype== first){
+                    dir=i.direction
                     total_time+=i.total_time
                     hits++
                     min=if(i.total_time < min) i.total_time else min
