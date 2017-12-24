@@ -82,16 +82,6 @@ class analyze {
             }
 
         }
-        for (i in 0 until array.size) {
-            val count = routes_done[array[i].patterntype]
-            if (count == null) {
-                routes_done.put(array[i].patterntype, 1)
-                val arrayofstops = ArrayList<stops>()
-                array[i].array.mapIndexedTo(arrayofstops) { stop_num, i -> stops(i.position, i.current_location, i.current_location_uuid, stop_num) }
-                return_array.add(route_stops(array[i].patterntype,arrayofstops))
-            }
-
-        }
         return return_array
     }
     fun analyze_stop_measures(resolution:Long,date:String,array:ArrayList<bus_summeries>):ArrayList<stop_time_training>{

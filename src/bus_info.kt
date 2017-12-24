@@ -37,7 +37,7 @@ data class stop_times(val previous_location:String,val previous_location_uuid:St
                       val delta_arrival:Int,val delta_departure:Int)
 
 //hold location and stop number on route
-data class stops(val Location:LatLng,val name:String, val UUID:String,val Position:Int)
+data class stops(val Location:LatLng,val name:String, val UUID:String,var Position:Int)
 
 //hold pattern type and stops array
 data class route_stops(val pattern:String,val stops_list:ArrayList<stops>)
@@ -57,24 +57,64 @@ data class times_data(val timestamp:String,val data:Array<Int>) {
     }
 
 
-//class that reads the specs of each bus from fleetlist.csv
+
+//class that reads the specs of each bus from fleetlist.dat
 class bus_specs{
-    private val specs = ArrayList<ArrayList<String>>()//2D array
-    fun get_specs(bus_id:String):Any{
+    private var specs = ArrayList<bus_spec_sheet>()
+    fun get_specs(bus_id:String):bus_spec_sheet{
         if(specs.size==0){ read() }//read if array is null, if not just scan
         specs.forEach { i ->
-            if(i[0].contains(bus_id)||bus_id.contains(i[0])){
+            if(i.ID==bus_id){
                 return i
             }
         }
-        return ""
+        return bus_spec_sheet("N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A",
+                "N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A",
+                "N/A","N/A","N/A","N/A")
     }
     private fun read(){
-        val lineList = mutableListOf<String>()
+        var lineList = mutableListOf<String>()
         File("fleetdata.dat").inputStream().bufferedReader().useLines { lines -> lines.forEach { lineList.add(it)} }
         lineList.forEach{
-            specs.add(ArrayList(it.split(',')))
+            if(!it.contains("//")||!it.contains("Fleet")) {
+                val arr=it.split(',')
+                try {
+                    specs.add(bus_spec_sheet(
+                            if (arr[0] != "") arr[0] else "N/A",
+                            if (arr[1] != "") arr[1] else "N/A",
+                            if (arr[2] != "") arr[2] else "N/A",
+                            if (arr[3] != "") arr[3] else "N/A",
+                            if (arr[4] != "") arr[4] else "N/A",
+                            if (arr[5] != "") arr[5] else "N/A",
+                            if (arr[6] != "") arr[6] else "N/A",
+                            if (arr[7] != "") arr[7] else "N/A",
+                            if (arr[8] != "") arr[8] else "N/A",
+                            if (arr[9] != "") arr[9] else "N/A",
+                            if (arr[10] != "") arr[10] else "N/A",
+                            if (arr[11] != "") arr[11] else "N/A",
+                            if (arr[12] != "") arr[12] else "N/A",
+                            if (arr[13] != "") arr[13] else "N/A",
+                            if (arr[14] != "") arr[14] else "N/A",
+                            if (arr[15] != "") arr[15] else "N/A",
+                            if (arr[16] != "") arr[16] else "N/A",
+                            if (arr[17] != "") arr[17] else "N/A",
+                            if (arr[18] != "") arr[18] else "N/A",
+                            if (arr[19] != "") arr[19] else "N/A",
+                            if (arr[20] != "") arr[20] else "N/A",
+                            if (arr[21] != "") arr[21] else "N/A",
+                            if (arr[22] != "") arr[22] else "N/A",
+                            if (arr[23] != "") arr[23] else "N/A"))
+                }catch (e:Exception){}
+
+            }
         }
         specs.removeAt(0)
     }
+    data class bus_spec_sheet(val ID:String,val Registration:String,
+        val Operating_division:String,val Livery:String, val Tacho_type:String,
+        val wifi:String,val router_type:String,val model:String,val make:String,
+        val body:String,val Chassis_type:String,val chassis_no:String, val engine_no:String,
+        val euro_cat:String,val CCTV:String, val Dest_type:String, val front_size:String,
+        val side_size:String, val rear_size:String, val body_no:String, val Seated:String,
+        val Standing:String,val reg_date:String,val license_no:String)
 }

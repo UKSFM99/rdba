@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     println("Enter mode")
@@ -27,6 +28,14 @@ fun main(args: Array<String>) {
         val route = readLine().toString()
         println("enter dates in format YYYY-MM-DD, separated by ','")
         val date = readLine().toString()
+        val date_array=date.split(',')
+        date_array.forEach {
+            try{
+                SimpleDateFormat("yyyy-MM-dd").parse(it)
+            }catch (e:Exception){
+                throw Exception("Invalid date \"$it\"! Halting")
+            }
+        }
         val today=SimpleDateFormat("yyyy-MM-dd").format(Date())
         //Check input dates against current date - if match then throw Exception as we cannot run historical mode with current day's data!
         if(date.contains(today)){throw Exception("Cannot enter Today's date in historical mode!, please use Live mode")}
