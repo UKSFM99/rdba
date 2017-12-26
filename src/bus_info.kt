@@ -6,7 +6,7 @@ import kotlin.collections.ArrayList
     Class that holds multiple data classes with various information
  */
 
-//Most verbose class -> Direct output from JSON goes here
+//Direct output from reading buses API gets structured and put into bus_info objects here
 data class bus_info(val Lineref:String,val LocationCode:String,
                     val LocationName:String,val JourneyType:String,
                     val LiveJourneyId:String,val Sequence:String,
@@ -44,10 +44,11 @@ data class bus_average(val timestamp:String,val inbound_avg:String,val inbound_n
 
 //class to hold our actual training data for stops
 data class stop_time_training(val from_to:String, var times: ArrayList<times_data>)
-    //Arraylist contains count,totaltime,min,max
-data class times_data(val timestamp:String,val data:Array<Int>) {
+
+
+data class times_data(val timestamp:String,val data:Array<Int>) {//Array contains count,totaltime,min,max
         fun get_avg() = (data[1].toDouble() / data[0].toDouble()).toInt()
-        //have an array in data class, override equals() and hashcode() function to prevent bugs!
+        //have an array in data class, override equals() and hashcode() function to prevent bugs! - Auto generated
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -129,3 +130,7 @@ class bus_specs{
         val side_size:String, val rear_size:String, val body_no:String, val Seated:String,
         val Standing:String,val reg_date:String,val license_no:String)
 }
+
+//LIVE INFO DATA
+//All info from live API gets put into these objects
+data class bus_live(val id:String?,val service:String,val heading:Int?,val location:LatLng,val timestamp:String)

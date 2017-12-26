@@ -1,1 +1,0 @@
-data class bus_live(val id:String?,val service:String,val heading:Int?,val location:LatLng,val timestamp:String)
