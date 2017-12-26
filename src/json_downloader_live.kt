@@ -29,6 +29,7 @@ class json_downloader_live():Runnable {
             if(data == null){
                 System.err.println("Did not find ${i.id}, adding it")
                 bus_group.put(i.id,Neuron(i.id,i.service))
+                bus_group.getValue(i.id).update_location(Pair(i.location,i.timestamp))
             }
             else{
                 data.update_location(Pair(i.location,i.timestamp))

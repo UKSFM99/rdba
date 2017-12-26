@@ -17,6 +17,7 @@ fun main(args: Array<String>) {
         val format=SimpleDateFormat("yyyy-MM-dd").format(now)
         println("Tracking for $format")
         System.err.println("WARNING: Method is incomplete, bugs are present")
+        Thread(console_input()).start()
         Timer().scheduleAtFixedRate(timerTask{
             val thread = Thread(json_downloader_live())
             thread.start()

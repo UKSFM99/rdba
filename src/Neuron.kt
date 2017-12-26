@@ -1,4 +1,5 @@
 
+import com.sun.xml.internal.ws.util.StringUtils
 import java.io.FileReader
 import java.io.BufferedReader
 import java.io.File
@@ -14,9 +15,9 @@ class Neuron(val id:String,val route:String) {
     val metadata:bus_specs.bus_spec_sheet
     var route_data=HashMap<String,ArrayList<stops>>()
     private var updates_without_change=0
-    private var location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
+    var location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
     private var prev_location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
-    private var curr_stop=""
+    var curr_stop=""
     private var prev_stop=""
     init{
         this.metadata = bus_specs().get_specs(id)
@@ -41,38 +42,65 @@ class Neuron(val id:String,val route:String) {
                     println("Bus $id (Route $route) moved ${get_distance_traveled_m(location.first,prev_location.first)} m at ${get_speed(get_distance_traveled_m(location.first,prev_location.first), get_time_delta(location.second, prev_location.second))} mph")
                 }
                 else{
+                    var found_match=false
+                    var same_location=true
                     if(route_data.isNotEmpty()) {
-                        route_data.forEach { i ->
-                            val route_start=i.value[0]
-                            val route_end=i.value[i.value.lastIndex]
-                            i.value.forEach {
-                                if (get_distance_traveled_m(location.first, it.Location) <= 10) {
-                                    if(it.name == route_start.name){println("${text_color.ANSI_CYAN}Bus $id is at ${it.name} which is the start stop of route ${i.key.split(',')[0]}${text_color.ANSI_RESET}")}
-                                    if(it.name == route_end.name){println("${text_color.ANSI_CYAN}Bus $id is at ${it.name} which is the end stop of route ${i.key.split(',')[0]}${text_color.ANSI_RESET}")}
-                                    else {
-                                        println("${text_color.ANSI_BLUE}Bus $id (Route $route(${i.key.split(',')[0]})) is at ${it.name} heading towards ${i.key.split(',')[1]}${text_color.ANSI_RESET}")
+                        route_data.forEach {
+                            if(found_match){return@forEach}//break out of forEach functional loop
+                            it.value.forEach {
+                                if(get_distance_traveled_m(it.Location,location.first) <=10){
+                                    found_match=true
+                                    if(it.name != curr_stop) {
+                                        prev_stop = curr_stop
+                                        curr_stop = it.name
+                                        same_location=false
                                     }
-                                    prev_stop=curr_stop
-                                    curr_stop=it.name
                                 }
                             }
                         }
-                        if(prev_stop!=""){
-                            var route_hits=ArrayList<String>()
-                            route_data.forEach{i->
-                                i.value.forEachIndexed { index, stops ->
-                                    try{
-                                        if(curr_stop==stops.name&&prev_stop==i.value[index-1].name){
-                                            println("${text_color.ANSI_PURPLE}>50% chance $id is on ${i.key.split(',')[0]} to ${i.key.split(',')[1]}${text_color.ANSI_RESET}")
-                                        }
-                                        else{route_hits.add(i.key)}
-
-                                    }catch(e:Exception){}
+                        //bus is at a stop, see if its the end of the line
+                        route_data.forEach {
+                            if(it.key.split(',')[1]==curr_stop){
+                                route_data.put("${it.key.split(',')[0]},${it.key.split(',')[1]},E",it.value)
+                            }
+                        }
+                        if(!same_location&&found_match) {
+                            val route_name_array=ArrayList<String>()
+                            route_data.forEach { i ->
+                                i.value.forEach {
+                                    if(it.name == curr_stop){route_name_array.add(i.key)}
                                 }
                             }
-                            route_hits.forEach { route_data.remove(it) }
+                            //print pretty table
+                            var max=0 //max length of table entry
+                            var header=" Possible routes for bus $id at $curr_stop "
+                            val route_entry_format="%1 (%2) -> %3 STATUS:%4"//%1=route %2=route code eg:JPxx %3=destination
+                            max=header.length
+                            route_name_array.forEach {//get longest string
+                                val route_entry_string=route_entry_format.replace("%1",route)
+                                        .replace("%2",it.split(',')[0])
+                                        .replace("%3", it.split(',')[1])
+                                        .replace("%4",if(it.split(',')[2]=="I") "INCLUDED" else "EXCLUDED")
+                                max=if(route_entry_string.length > max) route_entry_string.length else max
+                            }
+                            val line="+${"-".repeat(max)}+"
+                            println("${text_color.ANSI_PURPLE}$line")
+                            var diff=max-header.length
+                            println("|${" ".repeat((diff.toDouble()/2).toInt())}$header${" ".repeat(((diff.toDouble()/2)+0.5).toInt())}|")
+                            println(line)
+                            route_name_array.forEach {
+                                val str=route_entry_format.replace("%1",route)
+                                        .replace("%2",it.split(',')[0])
+                                        .replace("%3", it.split(',')[1])
+                                        .replace("%4", if(it.split(',')[2]=="I") "INCLUDED" else "EXCLUDED")
+                                diff=max-str.length
+                                println("|$str${" ".repeat(diff)}|")
+                            }
+                            println("$line${text_color.ANSI_RESET}")
                         }
+                        if(same_location&&found_match){println("${text_color.ANSI_BLUE}!!Bus $id is Still at $curr_stop!!${text_color.ANSI_RESET}")}
                     }
+                    if(!found_match){println("Assuming $id is stuck in traffic at (${location.first.Latitude},${location.first.Longitude})")}
                 }
             }
         }
@@ -88,17 +116,18 @@ class Neuron(val id:String,val route:String) {
     }
     fun print_specs(){
         if(metadata.ID!="N/A") {
-            println("\n")
+            println("${text_color.ANSI_BLUE}I found this:")
             System.out.println("""
                 ---BUS INFO---
                 FLEET NUMBER: ${metadata.ID}
                 REG NUMBER:   ${metadata.Registration}
                 DATE REGISTERED:${metadata.reg_date}
                 MAX SEATED: ${metadata.Seated}
-                MAX STANDING: ${metadata.Standing}
+                MAX STANDING: ${metadata.Standing}${text_color.ANSI_RESET}
         """.trimIndent())
+            println("\n")
         }
-        else{System.err.println("Warning. No Fleet data for ID $id")}
+        else{System.err.println("Sorry, I have no fleet data for Bus $id")}
     }
     fun get_distance_traveled_m(loc1:LatLng,loc2:LatLng):Int{
         val Rad = 6371.0 //Earth's Radius In kilometers
@@ -128,7 +157,7 @@ class Neuron(val id:String,val route:String) {
                     }
                 }
                 if(temp_array[0] != temp_array[temp_array.lastIndex]) {
-                    hash_output.put("${it.toString().replace("output/routes/$route/", "").replace(".csv", "")},${temp_array[temp_array.lastIndex].name}", temp_array)
+                    hash_output.put("${it.toString().replace("output/routes/$route/", "").replace(".csv", "")},${temp_array[temp_array.lastIndex].name},I", temp_array) //I=included
                 }
                 else{
                     //TODO Handle loop route codes
