@@ -1,7 +1,7 @@
 import java.net.URL
 import kotlin.system.exitProcess
 
-class json_downloader_live():Runnable {
+class json_downloader_live :Runnable {
     private var array_split=ArrayList<String>()
     companion object {
         val bus_group=HashMap<String,Neuron>()
@@ -29,15 +29,15 @@ class json_downloader_live():Runnable {
             println("${text_color.ANSI_RED}There are no Buses currently running!${text_color.ANSI_RESET}")
             exitProcess(1)
         }
-        data.forEach { i ->
-            val data= bus_group.get(i.id!!)
+        data.forEach { (id, service, _, location, timestamp) ->
+            val data= bus_group[id!!]
             if(data == null){
-                System.err.println("Did not find ${i.id}, adding it")
-                bus_group.put(i.id,Neuron(i.id,i.service))
-                bus_group.getValue(i.id).update_location(Pair(i.location,i.timestamp))
+                System.err.println("Did not find ${id}, adding it")
+                bus_group.put(id,Neuron(id, service))
+                bus_group.getValue(id).update_location(Pair(location, timestamp))
             }
             else{
-                data.update_location(Pair(i.location,i.timestamp))
+                data.update_location(Pair(location, timestamp))
             }
         }
     }

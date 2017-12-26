@@ -1,7 +1,6 @@
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
+
 /*
     Class that holds JSON downloader for the analytics part of the program
  */
@@ -73,7 +72,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
     }
     //return the value at index in JSON
     private fun return_element(query:String):String{
-        try {
+        return try {
             val pos: Int? = search_for_index(query)
             val temp = array_split[pos!!].split(':')
             var index = temp[1].replace("\"", "")
@@ -81,7 +80,7 @@ class json_downloader(url:String,route:String,date:String):Runnable {
                 index += ":${temp[2]}:${temp[3].replace("\"", "")}"
             } catch (e: Exception) {
             }//try to re-join date string
-            return index
+            index
         }
         catch (e:KotlinNullPointerException){ throw Exception("Bus route invalid! - Halting download of $route") }
     }

@@ -1,10 +1,8 @@
 
-import com.sun.xml.internal.ws.util.StringUtils
-import java.io.FileReader
-import java.io.BufferedReader
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.ArrayList
+import kotlin.collections.HashMap
 
 
 /*
@@ -12,7 +10,7 @@ import java.util.ArrayList
  */
 
 class Neuron(val id:String,val route:String) {
-    val metadata:bus_specs.bus_spec_sheet
+    val metadata = bus_specs().get_specs(id)
     var route_data=HashMap<String,ArrayList<stops>>()
     private var updates_without_change=0
     var location = Pair(LatLng(0.toDouble(),0.toDouble()),"")
@@ -20,7 +18,6 @@ class Neuron(val id:String,val route:String) {
     var curr_stop=""
     private var prev_stop=""
     init{
-        this.metadata = bus_specs().get_specs(id)
         this.route_data = get_all_routes()
     }
     private val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -73,7 +70,7 @@ class Neuron(val id:String,val route:String) {
                             }
                             //print pretty table
                             var max=0 //max length of table entry
-                            var header=" Possible routes for bus $id at $curr_stop "
+                            val header=" Possible routes for bus $id at $curr_stop "
                             val route_entry_format="%1 (%2) -> %3 STATUS:%4"//%1=route %2=route code eg:JPxx %3=destination
                             max=header.length
                             route_name_array.forEach {//get longest string

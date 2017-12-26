@@ -1,4 +1,3 @@
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -9,6 +8,7 @@ import kotlin.collections.HashMap
  */
 
 class analyze {
+    private val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     fun analyze_times(array:ArrayList<bus_info>):ArrayList<bus_summeries>{
         val array_of_sequences=ArrayList<bus_summeries>()
         var start_time=""
@@ -64,7 +64,7 @@ class analyze {
         }
         return array_of_sequences
     }
-    private val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+
     private fun get_time_delta(time_now:String,time_before:String):Int = ((format.parse(time_now).time/1000)-(format.parse(time_before).time/1000)).toInt()
 
     //Work out different routes and each stop location/position in the route
@@ -96,10 +96,10 @@ class analyze {
                 array1.forEach { k ->
                     //if in time range
                     if(format.parse(k.arrive_time).time/1000 >=t && format.parse(k.arrive_time).time/1000 < (t+resolution)) {
-                        val data = map.search("${k.previous_location},${k.current_location},${direction}")
+                        val data = map.search("${k.previous_location},${k.current_location},$direction")
                         //stop entry was not found, create on
                         if (data == null) {
-                            map.add(stop_time_training("${k.previous_location},${k.current_location},${direction}", arrayListOf(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time)))))
+                            map.add(stop_time_training("${k.previous_location},${k.current_location},$direction", arrayListOf(times_data(timestamp, arrayOf(1,k.travel_time,k.travel_time,k.travel_time)))))
                         //stop entry was found, search for timestamp
                         } else {
                             //timestamp was found, so update it

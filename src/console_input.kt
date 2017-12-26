@@ -1,7 +1,6 @@
 import java.awt.FlowLayout
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.util.*
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.JPanel
@@ -39,7 +38,7 @@ class term_window(title:String) : Runnable{
     }
 }
 
-class query_window():Runnable{
+class query_window :Runnable{
     override fun run(){
         while(true){
             val query=JOptionPane.showInputDialog("Enter query")

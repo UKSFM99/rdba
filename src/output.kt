@@ -74,7 +74,7 @@ class output {
         File("output/times/$route").mkdirs()
         File("output/times/$route/$date.csv").printWriter().use{
             it.append("Bucket start,Inbound avg,Inbound nodes,Outbound avg,Outbound nodes\n")
-            array_of_averages.forEach{ (timestamp, inbound_avg, inbound_nodes, outbound_avg, outbound_nodes) -> it.append("${timestamp},${inbound_avg},${inbound_nodes},${outbound_avg},${outbound_nodes}\n") }
+            array_of_averages.forEach{ (timestamp, inbound_avg, inbound_nodes, outbound_avg, outbound_nodes) -> it.append("$timestamp,$inbound_avg,$inbound_nodes,$outbound_avg,$outbound_nodes\n") }
         }
 
         /*

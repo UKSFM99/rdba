@@ -4,7 +4,7 @@ import java.util.*
 import javax.swing.SwingUtilities
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
-import kotlin.system.exitProcess
+
 val console=term_window("Live feed log")
 val input_window=query_window()
 fun main(args: Array<String>) {

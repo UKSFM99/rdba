@@ -1,10 +1,6 @@
-import sun.reflect.generics.tree.Tree
 import java.io.File
-import java.io.InputStream
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /*
     Class that holds multiple data classes with various information
@@ -23,10 +19,6 @@ data class bus_info(val Lineref:String,val LocationCode:String,
                     val ScheduledArrival:String,val ActualArrival:String,
                     val ScheduledDepart:String,val ActualDepart:String
                     )
-
-//data class to hold LIVE bus information
-data class bus_live_info(val Lineref:String,val Location_lat_lng: LatLng,
-                         val LastUpdated:String,val vehicleCode:String ,val heading:Int,val Currstop:String)
 
 //Class that holds information about each route details
 data class stop_times(val previous_location:String,val previous_location_uuid:String,
@@ -55,6 +47,24 @@ data class stop_time_training(val from_to:String, var times: ArrayList<times_dat
     //Arraylist contains count,totaltime,min,max
 data class times_data(val timestamp:String,val data:Array<Int>) {
         fun get_avg() = (data[1].toDouble() / data[0].toDouble()).toInt()
+        //have an array in data class, override equals() and hashcode() function to prevent bugs!
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as times_data
+
+            if (timestamp != other.timestamp) return false
+            if (!Arrays.equals(data, other.data)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = timestamp.hashCode()
+            result = 31 * result + Arrays.hashCode(data)
+            return result
+        }
     }
 
 
@@ -74,7 +84,7 @@ class bus_specs{
                 "N/A","N/A","N/A","N/A")
     }
     private fun read(){
-        var lineList = mutableListOf<String>()
+        val lineList = mutableListOf<String>()
         File("fleetdata.dat").inputStream().bufferedReader().useLines { lines -> lines.forEach { lineList.add(it)} }
         lineList.forEach{
             if(!it.contains("//")||!it.contains("Fleet")) {

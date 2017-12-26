@@ -1,6 +1,3 @@
-import org.junit.Test
-import kotlin.test.assertEquals
-
 //LATLNG
 data class LatLng(val Latitude:Double,val Longitude:Double){
     fun get_lat():Double{
