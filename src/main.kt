@@ -1,10 +1,12 @@
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.swing.SwingUtilities
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
 import kotlin.system.exitProcess
-
+val console=term_window("Live feed log")
+val input_window=query_window()
 fun main(args: Array<String>) {
     println("Enter mode")
     println("1. Live tracking mode")
@@ -15,13 +17,13 @@ fun main(args: Array<String>) {
         println("Real time track mode")
         val now=Date()
         val format=SimpleDateFormat("yyyy-MM-dd").format(now)
-        println("Tracking for $format")
         System.err.println("WARNING: Method is incomplete, bugs are present")
-        Thread(console_input()).start()
         Timer().scheduleAtFixedRate(timerTask{
             val thread = Thread(json_downloader_live())
             thread.start()
         },0,10000)
+        SwingUtilities.invokeLater(console)
+        SwingUtilities.invokeLater(input_window)
     }
     else {
         println("Historical data mode")

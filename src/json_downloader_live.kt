@@ -1,4 +1,5 @@
 import java.net.URL
+import kotlin.system.exitProcess
 
 class json_downloader_live():Runnable {
     private var array_split=ArrayList<String>()
@@ -23,6 +24,10 @@ class json_downloader_live():Runnable {
                         return_element("\"observed\"")
                 ))
             }
+        }
+        if(data.isEmpty()){
+            println("${text_color.ANSI_RED}There are no Buses currently running!${text_color.ANSI_RESET}")
+            exitProcess(1)
         }
         data.forEach { i ->
             val data= bus_group.get(i.id!!)

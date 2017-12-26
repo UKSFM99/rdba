@@ -39,7 +39,7 @@ class Neuron(val id:String,val route:String) {
             location = input
             if (prev_location.first != LatLng(0.toDouble(), 0.toDouble())) {
                 if (location.first != prev_location.first && get_speed(get_distance_traveled_m(location.first,prev_location.first),get_time_delta(location.second, prev_location.second)) >=10) {
-                    println("Bus $id (Route $route) moved ${get_distance_traveled_m(location.first,prev_location.first)} m at ${get_speed(get_distance_traveled_m(location.first,prev_location.first), get_time_delta(location.second, prev_location.second))} mph")
+                    console.println("Bus $id (Route $route) moved ${get_distance_traveled_m(location.first,prev_location.first)} m at ${get_speed(get_distance_traveled_m(location.first,prev_location.first), get_time_delta(location.second, prev_location.second))} mph")
                 }
                 else{
                     var found_match=false
@@ -84,23 +84,23 @@ class Neuron(val id:String,val route:String) {
                                 max=if(route_entry_string.length > max) route_entry_string.length else max
                             }
                             val line="+${"-".repeat(max)}+"
-                            println("${text_color.ANSI_PURPLE}$line")
+                            console.println("${text_color.ANSI_PURPLE}$line")
                             var diff=max-header.length
-                            println("|${" ".repeat((diff.toDouble()/2).toInt())}$header${" ".repeat(((diff.toDouble()/2)+0.5).toInt())}|")
-                            println(line)
+                            console.println("|${" ".repeat((diff.toDouble()/2).toInt())}$header${" ".repeat(((diff.toDouble()/2)+0.5).toInt())}|")
+                            console.println(line)
                             route_name_array.forEach {
                                 val str=route_entry_format.replace("%1",route)
                                         .replace("%2",it.split(',')[0])
                                         .replace("%3", it.split(',')[1])
                                         .replace("%4", if(it.split(',')[2]=="I") "INCLUDED" else "EXCLUDED")
                                 diff=max-str.length
-                                println("|$str${" ".repeat(diff)}|")
+                                console.println("|$str${" ".repeat(diff)}|")
                             }
-                            println("$line${text_color.ANSI_RESET}")
+                            console.println("$line${text_color.ANSI_RESET}")
                         }
-                        if(same_location&&found_match){println("${text_color.ANSI_BLUE}!!Bus $id is Still at $curr_stop!!${text_color.ANSI_RESET}")}
+                        if(same_location&&found_match){console.println("${text_color.ANSI_BLUE}!!Bus $id is Still at $curr_stop!!${text_color.ANSI_RESET}")}
                     }
-                    if(!found_match){println("Assuming $id is stuck in traffic at (${location.first.Latitude},${location.first.Longitude})")}
+                    if(!found_match){console.println("Bus $id might be stuck in traffic at (${location.first.Latitude},${location.first.Longitude})")}
                 }
             }
         }
@@ -116,8 +116,8 @@ class Neuron(val id:String,val route:String) {
     }
     fun print_specs(){
         if(metadata.ID!="N/A") {
-            println("${text_color.ANSI_BLUE}I found this:")
-            System.out.println("""
+            console.println("${text_color.ANSI_BLUE}I found this:")
+            console.println("""
                 ---BUS INFO---
                 FLEET NUMBER: ${metadata.ID}
                 REG NUMBER:   ${metadata.Registration}
@@ -125,7 +125,7 @@ class Neuron(val id:String,val route:String) {
                 MAX SEATED: ${metadata.Seated}
                 MAX STANDING: ${metadata.Standing}${text_color.ANSI_RESET}
         """.trimIndent())
-            println("\n")
+            console.println("\n")
         }
         else{System.err.println("Sorry, I have no fleet data for Bus $id")}
     }
