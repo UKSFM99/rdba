@@ -19,8 +19,6 @@ class output {
         val format_output_date = SimpleDateFormat("HH:mm:ss")
         val start:Long = format.parse("$date 00:00:00").time/1000
         val end:Long = 1+format.parse("$date 23:59:59").time/1000
-        val route_occurance_threshold=0
-        //TODO add configuration to change threshold above
         val array_of_averages = ArrayList<bus_average>()
         //Filter out routes with less than n occurances
         val patterns=HashMap<String,Int>()//KEY:Pattern type VALUE:occurrences
@@ -34,13 +32,9 @@ class output {
             }
         }
         //sort the array by occurrences (value)
-        val wanted_routes=ArrayList<String>()
         val sorted_patterns=patterns.toList().sortedBy { (_,value) -> value}.toMap().toList()
         println("Route Pattern occurrences:")
         sorted_patterns.forEach { i -> println(i) }
-        sorted_patterns.forEach { (first, second) -> if(second > route_occurance_threshold){wanted_routes.add(first)} }
-        println("Allowing routes: $wanted_routes (Above threshold of $route_occurance_threshold)")
-        recorded.removeIf { i -> i.patterntype !in wanted_routes }//remove any routes that are not valid from wanted routes
         for(i in (start+resolution)..end step resolution){
             var inbound_count=0
             var outbound_count=0
