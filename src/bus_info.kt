@@ -133,4 +133,4 @@ class bus_specs{
 
 //LIVE INFO DATA
 //All info from live API gets put into these objects
-data class bus_live(val id:String?,val service:String,val heading:Int?,val location:LatLng,val timestamp:String)
+data class bus_live(val id:String?,val service:String,val heading:Int,val location:LatLng,val timestamp:String)

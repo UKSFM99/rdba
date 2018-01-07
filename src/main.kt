@@ -1,7 +1,7 @@
+
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.swing.SwingUtilities
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
 
@@ -22,8 +22,8 @@ fun main(args: Array<String>) {
             val thread = Thread(json_downloader_live())
             thread.start()
         },0,10000)
-        SwingUtilities.invokeLater(console)
-        SwingUtilities.invokeLater(input_window)
+        //SwingUtilities.invokeLater(console)
+        //SwingUtilities.invokeLater(input_window)
     }
     else {
         println("Historical data mode")

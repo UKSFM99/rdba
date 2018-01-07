@@ -21,16 +21,14 @@ fun ArrayList<*>.search(to_find:String):Int?{
     return null
 }
 
-class text_color{
-    companion object {
-        val ANSI_RESET = "\u001B[0m"
-        val ANSI_BLACK = "\u001B[30m"
-        val ANSI_RED = "\u001B[31m"
-        val ANSI_GREEN = "\u001B[32m"
-        val ANSI_YELLOW = "\u001B[33m"
-        val ANSI_BLUE = "\u001B[34m"
-        val ANSI_PURPLE = "\u001B[35m"
-        val ANSI_CYAN = "\u001B[36m"
-        val ANSI_WHITE = "\u001B[37m"
-    }
+class color{
+    private val os_name=System.getProperty("os.name")
+    fun printgreen(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[32m$input\u001B[0m")
+    fun printred(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[31m$input\u001B[0m")
+    fun printblack(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[30m$input\u001B[0m")
+    fun printblue(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[34m$input\u001B[0m")
+    fun printpurple(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[35m$input\u001B[0m")
+    fun printcyan(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[36m$input\u001B[0m")
+    fun printwhite(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[37m$input\u001B[0m")
+    fun printyellow(input:String)=if (os_name.contains("win")) println(input) else println("\u001B[33m$input\u001B[0m")
 }
