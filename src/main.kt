@@ -2,11 +2,14 @@
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
 
 val console=term_window("Live feed log")
 val input_window=query_window()
+
+val is_training=true
 fun main(args: Array<String>) {
     println("Enter mode")
     println("1. Live tracking mode")
@@ -16,12 +19,17 @@ fun main(args: Array<String>) {
     if(is_in_track_mode){
         println("Real time track mode")
         val now=Date()
-        val format=SimpleDateFormat("yyyy-MM-dd").format(now)
         System.err.println("WARNING: Method is incomplete, bugs are present")
-        Timer().scheduleAtFixedRate(timerTask{
-            val thread = Thread(json_downloader_live())
-            thread.start()
-        },0,10000)
+        if(!is_training) {
+            Timer().scheduleAtFixedRate(timerTask {
+                val thread = Thread(json_downloader_live(false, false))
+                thread.start()
+            }, 0, 10000)
+        }
+        else{
+            println("TRAINING MODE - USING HISTORICAL LIVE FEED")
+            run_offline()
+        }
         //SwingUtilities.invokeLater(console)
         //SwingUtilities.invokeLater(input_window)
     }
@@ -56,4 +64,26 @@ fun main(args: Array<String>) {
             }
         }
     }
+}
+fun run_offline(){
+    println("Running in offline mode")
+    val file_map=TreeMap<String,Int>()
+    val dir= File("td/").walkTopDown()
+    dir.forEach {
+        if (it.isFile) {
+            file_map.put(it.name.toString().replace("td/", ""), 0)
+        }
+    }
+    file_map.forEach {
+        json_downloader_live.file_num=it.key
+        val thread = Thread(json_downloader_live(true, false))
+        thread.start()
+        TimeUnit.SECONDS.sleep(2)
+    }
+    /*
+            json_downloader_live.file_num=it.name.toString().replace("td/","")
+
+        }
+    }
+    */
 }

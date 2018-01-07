@@ -50,7 +50,7 @@ class route(name:String){
             val distance_stops=HashMap<String,Int>()
             array_of_sub_routes_nom_mod.forEach {
                 it.value.forEach {
-                    val data=distance_stops.get(it.name)
+                    val data=distance_stops[it.name]
                     if(data == null) {
                         val dist = calc_distance(location, it.Location)
                         if(dist <=10) {
@@ -61,6 +61,20 @@ class route(name:String){
             }
             if(distance_stops.isEmpty()){
                 return hashMapOf()
+            }
+            //remove stops if more than 1...keep the stop with the smallest distance from bus
+            if(distance_stops.size > 1){
+                var min_distance=1000
+                var min_distance_stop=""
+                //find minimum distance
+                distance_stops.forEach{if(it.value <= min_distance){min_distance = it.value}}
+                //find the stop with that minimum distance
+                distance_stops.forEach { if(it.value == min_distance){min_distance_stop=it.key} }
+                //delete that stop
+                val distance_stops_corrected=HashMap<String,Int>()
+                distance_stops_corrected.put(min_distance_stop,min_distance)
+                return distance_stops_corrected
+
             }
             return distance_stops
         }
@@ -99,6 +113,9 @@ class route(name:String){
             }
         }
         to_delete_array.forEach { array_of_sub_routes.remove(it) }//delete entries here - avoids concurrent modification exceptions
+        if(return_hash.size==1){
+            color().printcyan("!!=> Bus IS on route ${return_hash.keys}!")
+        }
         return return_hash
     }
 }

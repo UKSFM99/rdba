@@ -1,3 +1,4 @@
+
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,13 +24,4 @@ class test_latlng{
             i+=0.1
         }
     }
-    /*
-    @Test
-    fun heading(){
-        println(Neuron("1","1").get_bearing_degrees(
-                LatLng(51.422809, -0.863938),
-                LatLng(51.425634, -0.871135)
-        ))
-    }
-    */
 }

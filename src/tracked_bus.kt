@@ -21,29 +21,43 @@ class tracked_bus(val id:String, val route_id:String) {
     //Store current and last known stop the bus was at
     private var current_stop=HashMap<String,Int>()
     private var last_known_stop=HashMap<String,Int>()
-
+    private var arrival_time=""
+    private var departure_time=""
     //TODO work on what we do if bus is stationary
     fun stationary(location:LatLng){
         val possible_stops=routes.findstops(location)
         var is_still_at_stop=false
-        possible_stops.forEach { if(current_stop[it.key] !=null) is_still_at_stop=true }//see if we could be at a previous stop
+        //need to check both previous and current stop. This is because sometimes the bus is on a boundary and fluctuates between in and out of a stops range
+        possible_stops.forEach { if(current_stop[it.key] !=null ||last_known_stop[it.key]!=null) is_still_at_stop=true }//see if we could be at a previous stop
         if(!is_still_at_stop) {
             if (!possible_stops.isEmpty()) {
+                arrival_time=location_now.second
+                if(!last_known_stop.isEmpty()){
+                    color().printgreen("Bus $id traveled from ${last_known_stop.keys} to ${possible_stops.keys}, took ~${calc_timedelta(time_format.parse(arrival_time),time_format.parse(departure_time))} seconds")
+                }
                 color().printblue("Bus $id could be at stop(s) ${possible_stops.keys} with distances of ${possible_stops.values} meters")
                 possible_stops.forEach {
                     val routes = routes.get_routes_with_stop(it.key)
+                    if(routes.size == 1){
+                        //HORRAY! FOUND A DEFINATE ROUTE
+                        color().printcyan("HORRAY! Bus $id is 100% on route ${routes.keys}")
+                        //TODO Handle timetable serving
+                    }
                 }
                 current_stop = possible_stops
             }
             else{
                 if(!current_stop.isEmpty()) {
+                    last_known_stop.clear()
                     color().printgreen("Bus $id left ${current_stop.keys} at ~${location_now.second}")
-                    last_known_stop=current_stop
+                    departure_time=location_now.second
+                    color().printgreen("Bus $id was at ${current_stop.keys} for ~${calc_timedelta(time_format.parse(departure_time),time_format.parse(arrival_time))} seconds")
+                    last_known_stop.putAll(current_stop)
                     current_stop.clear()
                 }
             }
         }
-        else{
+        else if(!current_stop.isEmpty()){
             color().printgreen("Bus $id is still at ${current_stop.keys}")
         }
     }

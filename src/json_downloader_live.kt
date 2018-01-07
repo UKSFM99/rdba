@@ -1,16 +1,33 @@
+import java.io.File
 import java.net.URL
 import java.net.UnknownHostException
+import java.util.*
 import kotlin.system.exitProcess
 
-class json_downloader_live :Runnable {
+class json_downloader_live(val is_training:Boolean,val is_writing:Boolean) :Runnable {
     private var array_split=ArrayList<String>()
     companion object {
         val bus_group=HashMap<String,tracked_bus>()
+        var file_num=""
     }
     override fun run() {
         try {
-            var read = URL("http://siri.buscms.com/reading/vehicles.json").readText()
-            read = read.substring(2, read.length - 2)//remove [{ and }] from string
+            var read=""
+            if(is_training){
+                val file=File("td/$file_num")
+                read=file.readText()
+            }
+            else {
+                read = URL("http://siri.buscms.com/reading/vehicles.json").readText()
+                read=read.substring(2, read.length - 2)//remove [{ and }] from string
+            }
+            if(is_writing) {
+                //Write training data block
+                val time = Date().time
+                File("td/$time").printWriter().use {
+                    it.append(read)
+                }
+            }
             val array = read.split("},{")
             val data = ArrayList<bus_live>()
             data.clear()
