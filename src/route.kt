@@ -3,7 +3,8 @@ import java.io.File
 class route(name:String){
     //store name of route here
     val name=name
-    val array_of_sub_routes = get_subroutes()
+    var array_of_sub_routes = HashMap<String,ArrayList<stops>>()
+    val array_of_sub_routes_nom_mod = get_subroutes()
 
     //Function to get all sub routes under route name ie: X4 as JP56,JP58,JP59,JP60
     //Of which each route code has a different set of stops
@@ -40,13 +41,14 @@ class route(name:String){
         else{
             println("Found routes ${return_hash.keys} for $name")
         }
+        array_of_sub_routes=return_hash
         return return_hash
     }
 
     fun findstops(location:LatLng):HashMap<String,Int>{
-        if(!array_of_sub_routes.isEmpty()){
+        if(!array_of_sub_routes_nom_mod.isEmpty()){
             val distance_stops=HashMap<String,Int>()
-            array_of_sub_routes.forEach {
+            array_of_sub_routes_nom_mod.forEach {
                 it.value.forEach {
                     val data=distance_stops.get(it.name)
                     if(data == null) {
@@ -81,9 +83,22 @@ class route(name:String){
         val return_hash=HashMap<String,Int>()
         array_of_sub_routes.forEach { name ->
             name.value.forEach {
-                if(it.name==stop_name){return_hash.put(name.key,100)}
+                if(it.name==stop_name){return_hash.put(name.key,0)}
             }
         }
+        val perc="%NAN%"//TODO proper percentage readout and calculation
+        val to_delete_array=ArrayList<String>()
+        array_of_sub_routes.forEach { base_id ->
+            val data=return_hash[base_id.key]
+            if(data == null){
+                color().printpurple("=> Bus is not on route ${base_id.key}! - removing from list")
+                to_delete_array.add(base_id.key)
+            }
+            else{
+                color().printpurple("=> Bus can be on route ${base_id.key} - probability is $perc%")
+            }
+        }
+        to_delete_array.forEach { array_of_sub_routes.remove(it) }//delete entries here - avoids concurrent modification exceptions
         return return_hash
     }
 }

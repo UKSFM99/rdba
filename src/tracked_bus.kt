@@ -1,5 +1,6 @@
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 // Each bus being tracked is stored here - As well as all its related information
 class tracked_bus(val id:String, val route_id:String) {
@@ -18,18 +19,32 @@ class tracked_bus(val id:String, val route_id:String) {
     //Route information
     private val routes=route(route_id)
     //Store current and last known stop the bus was at
-    private var current_stop=""
-    private var last_known_stop=""
+    private var current_stop=HashMap<String,Int>()
+    private var last_known_stop=HashMap<String,Int>()
 
     //TODO work on what we do if bus is stationary
     fun stationary(location:LatLng){
         val possible_stops=routes.findstops(location)
-        if(!possible_stops.isEmpty()){
-            color().printblue("Bus $id could be at stop(s) ${possible_stops.keys} with distances of ${possible_stops.values} meters")
-            possible_stops.forEach {
-                val routes=routes.get_routes_with_stop(it.key)
-                routes.forEach { color().printpurple("=> can be on route ${it.key}, probability is ${(100.toDouble()/routes.size.toDouble()).toInt()}%") }
+        var is_still_at_stop=false
+        possible_stops.forEach { if(current_stop[it.key] !=null) is_still_at_stop=true }//see if we could be at a previous stop
+        if(!is_still_at_stop) {
+            if (!possible_stops.isEmpty()) {
+                color().printblue("Bus $id could be at stop(s) ${possible_stops.keys} with distances of ${possible_stops.values} meters")
+                possible_stops.forEach {
+                    val routes = routes.get_routes_with_stop(it.key)
+                }
+                current_stop = possible_stops
             }
+            else{
+                if(!current_stop.isEmpty()) {
+                    color().printgreen("Bus $id left ${current_stop.keys} at ~${location_now.second}")
+                    last_known_stop=current_stop
+                    current_stop.clear()
+                }
+            }
+        }
+        else{
+            color().printgreen("Bus $id is still at ${current_stop.keys}")
         }
     }
 
