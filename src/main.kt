@@ -2,14 +2,13 @@
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask
 
 val console=term_window("Live feed log")
 val input_window=query_window()
 
-val is_training=true
+val is_training=false
 fun main(args: Array<String>) {
     println("Enter mode")
     println("1. Live tracking mode")
@@ -78,7 +77,7 @@ fun run_offline(){
         json_downloader_live.file_num=it.key
         val thread = Thread(json_downloader_live(true, false))
         thread.start()
-        TimeUnit.SECONDS.sleep(2)
+        //TimeUnit.SECONDS.sleep(2)
     }
     /*
             json_downloader_live.file_num=it.name.toString().replace("td/","")

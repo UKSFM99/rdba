@@ -113,9 +113,39 @@ class route(name:String){
             }
         }
         to_delete_array.forEach { array_of_sub_routes.remove(it) }//delete entries here - avoids concurrent modification exceptions
-        if(return_hash.size==1){
-            color().printcyan("!!=> Bus IS on route ${return_hash.keys}!")
+        return return_hash
+    }
+
+    //check the current stop of the bus against the previous stop. Then see if the bus skipped any stops
+    fun get_missed_stops(curr_stop:String,prev_stop:String):HashMap<String,ArrayList<String>>{
+        val return_hash=HashMap<String,ArrayList<String>>()
+        var first_position=0
+        var second_position=0
+        array_of_sub_routes.forEach { values ->
+            val return_array=ArrayList<String>()
+            values.value.forEach {
+                if(curr_stop in it.toString()){
+                    first_position=values.value.indexOf(it)
+                }
+                if(prev_stop in it.toString()){
+                    second_position=values.value.indexOf(it)
+                }
+            }
+            if(second_position > first_position){//valid
+                if(first_position+1 != second_position){
+                    for(i in first_position+1 until second_position){
+                        try{values.value[i].name} catch (e:IndexOutOfBoundsException){}
+
+                    }
+                }
+            }
+            return_hash.put(values.key,return_array)
         }
+        //delete any emtpy arrays
+        val remove_hash=ArrayList<String>()
+        return_hash.forEach { if(it.value.isEmpty()){remove_hash.add(it.key)} }
+        remove_hash.forEach { return_hash.remove(it) }
+
         return return_hash
     }
 }

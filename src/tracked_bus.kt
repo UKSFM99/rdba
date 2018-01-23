@@ -33,7 +33,17 @@ class tracked_bus(val id:String, val route_id:String) {
             if (!possible_stops.isEmpty()) {
                 arrival_time=location_now.second
                 if(!last_known_stop.isEmpty()){
-                    color().printgreen("Bus $id traveled from ${last_known_stop.keys} to ${possible_stops.keys}, took ~${calc_timedelta(time_format.parse(arrival_time),time_format.parse(departure_time))} seconds")
+                    val calculaed_travel_time=calc_timedelta(time_format.parse(arrival_time),time_format.parse(departure_time))
+                    color().printgreen("Bus $id traveled from ${last_known_stop.keys} to ${possible_stops.keys}, took ~$calculaed_travel_time seconds")
+                    val missed_stops=routes.get_missed_stops(last_known_stop.keys.first(),possible_stops.keys.first())
+                    if(missed_stops.isEmpty()){color().printgreen("Bus did not miss any stops")}
+                    else{
+                        color().printred("Bus missed stops:")
+                        missed_stops.forEach {
+                            color().printred("=> Route ${it.key} ==> missed ${it.value}")
+                        }
+                    }
+
                 }
                 color().printblue("Bus $id could be at stop(s) ${possible_stops.keys} with distances of ${possible_stops.values} meters")
                 possible_stops.forEach {
